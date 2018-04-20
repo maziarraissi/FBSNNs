@@ -67,119 +67,100 @@ and $$X^0_m = \xi$$ for every $$m$$.
 
 * * * * * *
 #### Results
-**Two-dimensional damped oscillator**
 
-As a first illustrative example, let us consider the two-dimensional damped harmonic oscillator with cubic dynamics; i.e.,
+The proposed framework provides a universal treatment of coupled forward-backward stochastic differential equations of  fundamentally  different  nature and their corresponding high-dimensional partial differential equations. This generality  will be demonstrated by applying the algorithm to a wide range of canonical problems spanning a number of scientific domains  including a 100-dimensional [Black-Scholes-Barenblatt](https://en.wikipedia.org/wiki/Black–Scholes_model) equation and a 100-dimensional [Hamilton-Jacobi-Bellman](https://en.wikipedia.org/wiki/Hamilton–Jacobi–Bellman_equation) equation. These  examples are motivated by the pioneering work of [Beck et. al.](https://arxiv.org/abs/1709.05963). All data and codes used in this manuscript will be publicly available on [GitHub](https://github.com/maziarraissi/FBSNNs).
 
-$$
-\begin{array}{l}
-\dot{x} = -0.1\ x^3 + 2.0\ y^3,\\
-\dot{y} = -2.0\ x^3 - 0.1\ y^3.
-\end{array}
-$$
+**Black-Scholes-Barenblatt Equation in 100D**
 
-We use $$[x_0\ y_0]^T = [2\ 0]^T$$ as initial condition and collect data from $$t = 0$$ to $$t = 25$$ with a time-step size of $$\Delta t = 0.01$$. The data are plotted in the following figure. We employ a neural network with one hidden layer and 256 neurons to represent the nonlinear dynamics. As for the multistep scheme, we use Adams-Moulton with $$M=1$$ steps (i.e., the trapezoidal rule). Upon training the neural network, we solve the identified system using the same initial condition as the one above. The following figure provides a qualitative assessment of the accuracy in identifying the correct nonlinear dynamics. Specifically, by comparing the exact and predicted trajectories of the system, as well as the resulting phase portraits, we observe that the algorithm can correctly capture the dynamic evolution of the system.
-
-![](http://www.dam.brown.edu/people/mraissi/assets/img/Cubic2D.png)
-> _Harmonic Oscillator:_ Trajectories of the two-dimensional damped harmonic oscillator with cubic dynamics are depicted in the left panel while the corresponding phase portrait is plotted in the right panel. Solid colored lines represent the exact dynamics while the dashed black lines demonstrate the learned dynamics. The identified system correctly captures the form of the dynamics and accurately reproduces the phase portrait.
-
-**Lorenz system**
-
-To explore the identification of chaotic dynamics evolving on a finite dimensional attractor, we consider the nonlinear [Lorenz system](https://en.wikipedia.org/wiki/Lorenz_system)
+Let us start with the following forward-backward stochastic differential equations
 
 $$
 \begin{array}{l}
-\dot{x} = 10 (y - x),\\
-\dot{y} = x (28 - z) - y,\\
-\dot{z} = x y - (8/3) z.
+dX_t = \sigma\text{diag}(X_t)dW_t, ~~~ t \in [0,T],\\
+X_0 = \xi,\\
+dY_t = r(Y_t - Z_t' X_t)dt + \sigma Z_t'\text{diag}(X_t)dW_t, ~~~ t \in [0,T),\\
+Y_T = g(X_T),
 \end{array}
 $$
 
-We use $$[x_0\ y_0\ z_0]^T = [-8\ 7\ 27]^T$$ as initial condition and collect data from $$t = 0$$ to $$t = 25$$ with a time-step size of $$\Delta t = 0.01$$. The data are plotted in the following figure. We employ a neural network with one hidden layer and 256 neurons to represent the nonlinear dynamics. As for the multistep scheme, we use Adams-Moulton with $$M=1$$ steps (i.e., the trapezoidal rule). Upon training the neural network, we solve the identified system using the same initial condition as the one above. As depicted in the following figure, the learned system correctly captures the form of the attractor. The Lorenz system has a positive Lyapunov exponent, and small differences between the exact and learned models grow exponentially, even though the attractor remains intact. 
+where $$T=1$$, $$\sigma = 0.4$$, $$r=0.05$$, $$\xi = (1,0.5,1,0.5,\ldots,1,0.5) \in \mathbb{R}^{100}$$, and $$g(x) = \Vert x \Vert ^2$$. The above equations are related to the Black-Scholes-Barenblatt equation
 
-![](http://www.dam.brown.edu/people/mraissi/assets/img/Lorenz.png)
-> _Lorenz System:_ The exact phase portrait of the Lorenz system (left panel) is compared to the corresponding phase portrait of the learned dynamics (right panel).
+$$
+u_t = -\frac{1}{2} \text{Tr}[\sigma^2 \text{diag}(X_t^2) D^2u] + r(u - (Du)' x),
+$$
 
-**Fluid flow behind a cylinder**
+with terminal condition $$u(T,x) = g(x)$$. This equation admits the explicit solution
 
-In this example we collect data for the fluid flow past a cylinder at Reynolds number 100 using direct numerical simulations of the two dimensional Navier-Stokes equations (see the following figure).
+$$
+u(t,x) = \exp \left( (r + \sigma^2) (T-t) \right)g(x),
+$$
 
-![](http://www.dam.brown.edu/people/mraissi/assets/img/Cylinder_vorticity.png)
-> _Flow past a cylinder:_ A snapshot of the vorticity field of a solution to the Navier-Stokes equations for the fluid flow past a cylinder.
+which can be used to test the accuracy of the proposed algorithm. We approximate the unknown solution $$u(t,x)$$ by a 5-layer deep neural network with $$256$$ neurons per hidden layer. Furthermore, we partition the time domain $$[0,T]$$ into $$N=50$$ equally spaced intervals. Upon minimizing the loss function, using the [Adam optimizer](https://arxiv.org/abs/1412.6980) with mini-batches of size $$100$$ (i.e., $$100$$ realizations of the underlying Brownian motion), we obtain the results reported in the following figure. In this figure, we are evaluating the learned solution $$Y_t = u(t,X_t)$$ at representative realizations (not seen during training) of the underlying high-dimensional process $$X_t$$. Unlike the state of the art [algorithms](https://arxiv.org/abs/1709.05963), which can only approximate $$Y_0 = u(0,X_0)$$ at time $$0$$ and at the initial spatial point $$X_0=\xi$$, our algorithm is capable of approximating the entire solution function $$u(t,x)$$ in a single round of training as demonstrated in the following figure.
 
-In particular, we simulate the Navier-Stokes equations describing the two-dimensional fluid flow past a circular cylinder at Reynolds number 100 using the [Immersed Boundary Projection Method](https://github.com/cwrowley/ibpm). This approach utilizes a multi-domain scheme with four nested domains, each successive grid being twice as large as the previous one. Length and time are non-dimensionalized so that the cylinder has unit diameter and the flow has unit velocity. Data is collected on the finest domain with dimensions $$9 \times 4$$ at a grid resolution of $$449 \times 199$$. The flow solver uses a 3rd-order [Runge-Kutta](https://en.wikipedia.org/wiki/Runge–Kutta_methods) integration scheme with a time step of $$t = 0.02$$, which has been verified to yield well-resolved and converged flow fields. After simulations converge to steady periodic [vortex shedding](https://en.wikipedia.org/wiki/Vortex_shedding), flow snapshots are saved every $$\Delta t = 0.02$$. We then reduce the dimension of the system by [proper orthogonal decomposition](https://en.wikipedia.org/wiki/Principal_component_analysis) (POD). The POD results in a hierarchy of orthonormal modes that, when truncated, capture most of the energy of the original system for the given rank truncation. The first two most energetic POD modes capture a significant portion of the energy; the steady-state vortex shedding is a [limit cycle](https://en.wikipedia.org/wiki/Limit_cycle) in these coordinates. An additional mode, called the shift mode, is included to capture the transient dynamics connecting the unstable steady state with the mean of the limit cycle. The resulting POD coefficients are depicted in the following figure.
+![](http://www.dam.brown.edu/people/mraissi/assets/img/BSB_Apr18_50.png)
+> _Black-Scholes-Barenblatt Equation in 100D:_ Evaluations of the learned solution at representative realizations of the underlying high-dimensional process. It should be highlighted that the state of the art algorithms can only approximate the solution at time 0 and at the initial spatial point.
 
-![](http://www.dam.brown.edu/people/mraissi/assets/img/Cylinder.png)
-> _Flow past a cylinder:_ The exact phase portrait of the cylinder wake trajectory in reduced coordinates (left panel) is compared to the corresponding phase portrait of the learned dynamics (right panel).
+To further scrutinize the performance of our algorithm, in the following figure we report the mean and mean plus two standard deviations of the relative errors between model predictions and the exact solution computed based on $$100$$ independent realizations of the underlying Brownian motion. It is worth noting that in the previous figure we were plotting $$5$$ representative examples of the $$100$$ realizations used to generate the following figure. The results reported in these two figures are obtained after $$2 \times 10^4$$, $$3 \times 10^4$$, $$3 \times 10^4$$, and $$2 \times 10^4$$ consecutive iterations of the Adam optimizer with learning rates of $$10^{-3}$$, $$10^{-4}$$, $$10^{-5}$$, and $$10^{-6}$$, respectively. The total number of iterations is therefore given by $$10^5$$. Every $$10$$ iterations of the optimizer takes about $$0.88$$ seconds on a single NVIDIA Titan X GPU card. In each iteration of the Adam optimizer we are using $$100$$ different realizations of the underlying Brownian motion. Consequently, the total number of Brownian motion trajectories observed by the algorithm is given by $$10^7$$. It is worth highlighting that the algorithm converges to the exact value $$Y_0 = u(0,X_0)$$ in the first few hundred iterations of the Adam optimizer. For instance after only $$500$$ steps of training, the algorithms achieves an accuracy of around $$2.3 \times 10^{-3}$$ in terms of relative error. This is comparable to the results reported [here](https://arxiv.org/abs/1709.05963), both in terms of accuracy and the speed of the algorithm. However, to obtain more accurate estimates for $$Y_t = u(t,X_t)$$ at later times $$t>0$$ we need to train the algorithm using more iterations of the Adam optimizer.
 
-We employ a neural network with one hidden layer and $$256$$ neurons to represent the nonlinear dynamics shown in the above figure. As for the linear multistep scheme, we use Adams-Moulton with $$M=1$$ steps (i.e., the trapezoidal rule). Upon training the neural network, we solve the identified system. As depicted in the above figure, the learned system correctly captures the form of the dynamics and accurately reproduces the phase portrait, including both the transient regime as well as the limit cycle attained once the flow dynamics converge to the well known Karman vortex street.
+![](http://www.dam.brown.edu/people/mraissi/assets/img/BSB_Apr18_50_errors.png)
+> _Black-Scholes-Barenblatt Equation in 100D:_ Mean and mean plus two standard deviations of the relative errors between model predictions and the exact solution computed based on 100 realizations of the underlying Brownian motion.
 
-**Hopf bifurcation**
+**Hamilton-Jacobi-Bellman Equation in 100D**
 
-Many real-world systems depend on parameters and, when the parameters are varied, they may go through [bifurcations](https://en.wikipedia.org/wiki/Bifurcation_theory). To illustrate the ability of our method to identify parameterized dynamics, let us consider the Hopf normal form
+Let us now consider the following forward-backward stochastic differential equations
 
 $$
 \begin{array}{l}
-\dot{x} = \mu x + y - x(x^2 + y^2),\\
-\dot{y} = -x + \mu y - y(x^2 + y^2).
+dX_t = \sigma dW_t, ~~~ t \in [0,T],\\
+X_0 = \xi,\\
+dY_t = \Vert Z_t\Vert^2 dt + \sigma Z_t'dW_t, ~~~ t \in [0,T),\\
+Y_T = g(X_T),
 \end{array}
 $$
 
-Our algorithm can be readily extended to encompass parameterized systems. In particular, the above system can be equivalently written as
+where $$T=1$$, $$\sigma = \sqrt{2}$$, $$\xi = (0,0,\ldots,0)\in \mathbb{R}^{100}$$, and $$g(x) = \ln\left(0.5\left(1+\Vert x\Vert^2\right)\right)$$. The above equations are related to the Hamilton-Jacobi-Bellman equation
 
 $$
-\begin{array}{l}
-\dot{\mu} = 0,\\
-\dot{x} = \mu x + y - x(x^2 + y^2),\\
-\dot{y} = -x + \mu y - y(x^2 + y^2).
-\end{array}
+u_t = -\text{Tr}[D^2u] + \Vert Du\Vert^2,
 $$
 
-We collect data from the Hopf system for various initial conditions corresponding to different parameter values for $$\mu$$. The data is depicted in the following figure. The identified parameterized dynamics is shown in the following figure for a set of parameter values different from the ones used during model training. The learned system correctly captures the transition from the fixed point for $$\mu < 0$$ to the limit cycle for $$\mu>0$$.
-
-![](http://www.dam.brown.edu/people/mraissi/assets/img/Hopf.png)
-> _Hopf bifurcation:_ Training data from the Hopf system for various initial conditions corresponding to different parameter values (left panel) is compared to the corresponding phase portrait of the learned dynamics (right panel). It is worth highlighting that the algorithm is tested on initial conditions different from the ones used during training.
-
-**Glycolytic oscillator**
-
-As an example of complicated nonlinear dynamics typical of biological systems, we simulate the [glycolytic oscillator model](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0119821). The model consists of ordinary differential equations for the concentrations of 7 biochemical species; i.e.,
+with terminal condition $$u(T,x) = g(x)$$. This equation admits the explicit solution
 
 $$
-\begin{array}{l}
-\frac{dS_1}{dt} = J_0 - \frac{k_1 S_1 S_6}{1 + (S_6/K_1)^q},\\
-\frac{dS_2}{dt} = 2\frac{k_1 S_1 S_6}{1 + (S_6/K_1)^q} - k_2 S_2 (N - S_5) - k_6 S_2 S_5,\\
-\frac{dS_3}{dt} = k_2 S_2 (N - S_5) - k_3 S_3 (N - S_6),\\
-\frac{dS_4}{dt} = k_3 S_3 (A - S_6) - k_4 S_4 S_5 - \kappa (S_4 - S_7),\\
-\frac{dS_5}{dt} = k_2 S_2 (N - S_5) - k_4 S_4 S_5 - k_6 S_2 S_5,\\
-\frac{dS_6}{dt} = -2\frac{k_1 S_1 S_6}{1 + (S_6/K_1)^q} + 2 k_3 S_3 (A - S_6) - k_5 S_6,\\
-\frac{dS_7}{dt} = \psi \kappa (S_4 - S_7) - k S_7.
-\end{array}
+u(t,x) = -\ln\left(\mathbb{E}\left[\exp\left( -g(x + \sqrt{2} W_{T-t}) \right) \right] \right),
 $$
 
-As shown in the following figure, data from a simulation of this equation are collected from $$t = 0$$ to $$t = 10$$ with a time-step size of $$\Delta t = 0.01$$. We employ a neural network with one hidden layer and $$256$$ neurons to represent the nonlinear dynamics. As for the multi-step scheme, we use Adams-Moulton with $$M=1$$ steps (i.e., the trapezoidal rule). Upon training the neural network, we solve the identified system using the same initial condition as the ones used for the exact system. As depicted in the following figure, the learned system correctly captures the form of the dynamics.
+which can be used to test the accuracy of the proposed algorithm. In fact, due to the presence of the expectation operator $$\mathbb{E}$$ in the above equation, we can only approximately compute the exact solution. To be precise, we use $$10^5$$ Monte-Carlo samples to approximate the exact solution and use the result as ground truth. We represent the unknown solution $$u(t,x)$$ by a $$5$$-layer deep neural network with $$256$$ neurons per hidden layer. Furthermore, we partition the time domain $$[0,T]$$ into $$N=50$$ equally spaced intervals. Upon minimizing the loss function, using the Adam optimizer with mini-batches of size $$100$$ (i.e., $$100$$ realizations of the underlying Brownian motion), we obtain the results reported in the following figure. In this figure, we are evaluating the learned solution $$Y_t = u(t,X_t)$$ at a representative realization (not seen during training) of the underlying high-dimensional process $$X_t$$. It is worth noting that computing the exact solution to this problem is prohibitively costly due to the need for the aforementioned Monte-Carlo sampling strategy. That is why we are depicting only a single realization of the solution trajectories in the following figure. Unlike the state of the art [algorithms](https://arxiv.org/abs/1709.05963), which can only approximate $$Y_0 = u(0,X_0)$$ at time $$0$$ and at the initial spatial point $$X_0=\xi$$, our algorithm is capable of approximating the entire solution function $$u(t,x)$$ in a single round of training as demonstrated in the following figure.
 
-![](http://www.dam.brown.edu/people/mraissi/assets/img/Glycolytic.png)
-> _Glycolytic oscillator:_ Exact versus learned dynamics for random initial conditions.
+![](http://www.dam.brown.edu/people/mraissi/assets/img/HJB_Apr18_50.png)
+> _Hamilton-Jacobi-Bellman Equation in 100D:_ Evaluation of the learned solution at a representative realization of the underlying high-dimensional process. It should be highlighted that the state of the art algorithms can only approximate the solution at time 0 and at the initial spatial point.
+
+To further investigate the performance of our algorithm, in the following figure we report the relative error between model prediction and the exact solution computed for the same realization of the underlying Brownian motion as the one used in the previous figure. The results reported in these two figures are obtained after $$2 \times 10^4$$, $$3 \times 10^4$$, $$3 \times 10^4$$, and $$2 \times 10^4$$ consecutive iterations of the Adam optimizer with learning rates of $$10^{-3}$$, $$10^{-4}$$, $$10^{-5}$$, and $$10^{-6}$$, respectively. The total number of iterations is therefore given by $$10^5$$. Every $$10$$ iterations of the optimizer takes about $$0.79$$ seconds on a single NVIDIA Titan X GPU card. In each iteration of the Adam optimizer we are using $$100$$ different realizations of the underlying Brownian motion. Consequently, the total number of Brownian motion trajectories observed by the algorithm is given by $$10^7$$. It is worth highlighting that the algorithm converges to the exact value $$Y_0 = u(0,X_0)$$ in the first few hundred iterations of the Adam optimizer. For instance after only $$100$$ steps of training, the algorithms achieves an accuracy of around $$7.3 \times 10^{-3}$$ in terms of relative error. This is comparable to the results reported [here](https://arxiv.org/abs/1709.05963), both in terms of accuracy and the speed of the algorithm. However, to obtain more accurate estimates for $$Y_t = u(t,X_t)$$ at later times $$t>0$$ we need to train the algorithm using more iterations of the Adam optimizer.
+
+![](http://www.dam.brown.edu/people/mraissi/assets/img/HJB_Apr18_50_errors.png)
+> _Hamilton-Jacobi-Bellman Equation in 100D:_ The relative error between model prediction and the exact solution computed based on a single realization of the underlying Brownian motion.
 
 * * * * *
 
-**Conclusion**
+**Summary and Discussion**
 
-We have presented a [machine learning approach](https://arxiv.org/abs/1801.01236) for extracting nonlinear dynamical systems from time-series data. The proposed algorithm leverages the structure of well studied multi-step time-stepping schemes such as Adams-Bashforth, Adams Moulton, and BDF families, to construct efficient algorithms for learning dynamical systems using deep neural networks. Although state-of-the-art results are presented for a diverse collection of benchmark problems, there exist a series of open questions mandating further investigation. How could one handle a variable temporal gap $$\Delta{t}$$, i.e., irregularly sampled data in time? How would common techniques such as batch normalization, drop out, and $$\mathcal{L}_1$$/$$\mathcal{L}_2$$ regularization enhance the robustness of the proposed algorithm and mitigate the effects of over-fitting? How could one incorporate partial knowledge of the dynamical system in cases where certain interaction terms are already known? In terms of future work, interesting directions include the application of [convolutional architectures](https://en.wikipedia.org/wiki/Convolutional_neural_network) for mitigating the complexity associated with very high-dimensional inputs.
+In this work, we put forth a deep learning approach for solving coupled forward-backward stochastic differential equations and their corresponding high-dimensional partial differential equations. The resulting methodology showcases a series of promising results for a diverse collection of benchmark problems. As deep learning technology is continuing to grow rapidly both in terms of methodological, algorithmic, and infrastructural developments, we believe that this is a timely contribution that can benefit practitioners across a wide range of scientific domains. Specific applications that can readily enjoy these benefits include, but are not limited to, stochastic control, theoretical economics, and mathematical finance.
+
+In terms of future work, one could straightforwardly extend the proposed framework in the current work to solve second-order backward stochastic differential equations. The key is to leverage the fundamental relationships between second-order backward stochastic differential equations and fully-nonlinear second-order partial differential equations. Moreover, our method can be used to solve [stochastic control](https://en.wikipedia.org/wiki/Stochastic_control) problems, where in general, to obtain a candidate for an optimal control, one needs to solve a coupled forward-backward stochastic differential equation, where the backward components influence the dynamics of the forward component.
 
 * * * * *
 
 **Acknowledgements**
 
-This work received support by the DARPA EQUiPS grant N66001-15-2-4055 and the AFOSR grant FA9550-17-1-0013. All data and codes are publicly available on [GitHub](https://github.com/maziarraissi/MultistepNNs).
+This work received support by the DARPA EQUiPS grant N66001-15-2-4055 and the AFOSR grant FA9550-17-1-0013. All data and codes are publicly available on [GitHub](https://github.com/maziarraissi/FBSNNs).
 
 * * * * *
 ## Citation
 
-	@article{raissi2018multistep,
-	  title={Multistep Neural Networks for Data-driven Discovery of Nonlinear Dynamical Systems},
-	  author={Raissi, Maziar and Perdikaris, Paris and Karniadakis, George Em},
-	  journal={arXiv preprint arXiv:1801.01236},
+	@article{raissi2018forwardbackward,
+	  title={Forward-Backward Stochastic Neural Networks: Deep Learning of High-dimensional Partial Differential Equations},
+	  author={Raissi, Maziar},
+	  journal={arXiv preprint arXiv:1804.07010},
 	  year={2018}
 	}
 
