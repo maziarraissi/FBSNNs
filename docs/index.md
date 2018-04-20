@@ -1,47 +1,69 @@
 ---
 layout: default
 ---
-### Authors
-[Maziar Raissi](http://www.dam.brown.edu/people/mraissi/), [Paris Perdikaris](https://www.seas.upenn.edu/directory/profile.php?ID=237), and [George Em Karniadakis](https://www.brown.edu/research/projects/crunch/george-karniadakis)
+### Author
+[Maziar Raissi](http://www.dam.brown.edu/people/mraissi/)
 
 ### Abstract
 
-The process of transforming observed data into predictive mathematical models of the physical world has always been paramount in science and engineering. Although data is currently being collected at an ever-increasing pace, devising meaningful models out of such observations in an automated fashion still remains an open problem. In this work, we put forth a [machine learning approach](https://arxiv.org/abs/1801.01236) for identifying nonlinear [dynamical systems](https://en.wikipedia.org/wiki/Dynamical_system) from data. Specifically, we blend classical tools from numerical analysis, namely the [multi-step time-stepping schemes](https://en.wikipedia.org/wiki/Linear_multistep_method), with powerful nonlinear function approximators, namely [deep neural networks](https://en.wikipedia.org/wiki/Deep_learning), to distill the mechanisms that govern the evolution of a given data-set. We test the effectiveness of our approach for several benchmark problems involving the identification of complex, nonlinear and chaotic dynamics, and we demonstrate how this allows us to accurately learn the dynamics, forecast future states, and identify [basins of attraction](https://en.wikipedia.org/wiki/Attractor). In particular, we study the [Lorenz system](https://en.wikipedia.org/wiki/Lorenz_system), the [fluid flow](https://en.wikipedia.org/wiki/Navier–Stokes_existence_and_smoothness) behind a cylinder, the [Hopf bifurcation](https://en.wikipedia.org/wiki/Hopf_bifurcation), and the [Glycoltic](https://en.wikipedia.org/wiki/Glycolysis) oscillator model as an example of complicated nonlinear dynamics typical of biological systems.
+Classical numerical methods for solving [partial differential equations](https://en.wikipedia.org/wiki/Partial_differential_equation) suffer from the [curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality) mainly due to their reliance on meticulously generated spatio-temporal grids. Inspired by [modern deep learning based techniques](https://maziarraissi.github.io/DeepHPMs/) for solving forward and inverse problems associated with partial differential equations, we circumvent the tyranny of numerical discretization by devising an algorithm that is scalable to high-dimensions. In particular, we approximate the unknown solution by a [deep neural network](https://en.wikipedia.org/wiki/Deep_learning) which essentially enables us to benefit from the merits of [automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation). To train the aforementioned neural network we leverage the [well-known connection](https://onlinelibrary.wiley.com/doi/abs/10.1002/cpa.20168) between high-dimensional partial differential equations and [forward-backward stochastic differential equations](https://www.mathematik.hu-berlin.de/~perkowsk/files/bsde.pdf). In fact, independent realizations of a standard [Brownian motion](https://en.wikipedia.org/wiki/Brownian_motion) will act as training data. We test the effectiveness of our approach for a couple of benchmark problems spanning a number of scientific domains including [Black-Scholes-Barenblatt](https://en.wikipedia.org/wiki/Black–Scholes_model) and [Hamilton-Jacobi-Bellman](https://en.wikipedia.org/wiki/Hamilton–Jacobi–Bellman_equation) equations, both in 100-dimensions.
 
 * * * * * *
 #### Problem setup and solution methodology
 
-In [this work](https://arxiv.org/abs/1801.01236), we consider nonlinear dynamical systems of the form
+In [this work](https://arxiv.org/abs/1804.07010), we consider coupled forward-backward stochastic differential equations of the general form
 
 $$
-\frac{d}{d t} \mathbf{x}(t) = \mathbf{f}\left(\mathbf{x}(t)\right),
+\begin{array}{l}
+dX_t = \mu(t, X_t, Y_t, Z_t)dt + \sigma(t, X_t, Y_t)dW_t, ~~~ t \in [0,T],\\
+X_0 = \xi,\\
+dY_t = \varphi(t, X_t, Y_t, Z_t)dt + Z_t'\sigma(t,X_t,Y_t)dW_t, ~~~ t \in [0,T),\\
+Y_T = g(X_T),
+\end{array}
 $$
 
-where the vector $$\mathbf{x}(t) \in \mathbb{R}^D$$ denotes the state of the system at time $$t$$ and the function $$\mathbf{f}$$ describes the evolution of the system. Given noisy measurements of the state $$\mathbf{x}(t)$$ of the system at several time instances $$t_1, t_2, \ldots, t_N$$, our goal is to determine the function $$\mathbf{f}$$ and consequently discover the underlying dynamical system from data. We proceed by employing the general form of a [linear multistep method](https://en.wikipedia.org/wiki/Linear_multistep_method) with  $$M$$ steps to obtain
+where $$W_t$$ is a vector-valued Brownian motion. A solution to these equations consists of the stochastic processes $$X_t$$, $$Y_t$$, and $$Z_t$$. It is [well-known](https://onlinelibrary.wiley.com/doi/abs/10.1002/cpa.20168) that coupled forward-backward stochastic differential equations are related to quasi-linear partial differential equations of the form
 
 $$
-\sum_{m=0}^M \left[\alpha_m \mathbf{x}_{n-m} + \Delta t \beta_m \mathbf{f}(\mathbf{x}_{n-m})\right] = 0, \ \ \ n = M, \ldots, N.
+u_t = f(t,x,u,Du,D^2u),
 $$
 
-Here, $$\mathbf{x}_{n-m}$$ denotes the state of the system $$\mathbf{x}(t_{n-m})$$ at time $$t_{n-m}$$. Different choices for the parameters $$\alpha_m$$ and $$\beta_m$$ result in specific schemes. For instance, the trapezoidal rule
+with terminal condition $$u(T,x) = g(x)$$, where $$u(t,x)$$ is the unknown solution and
 
 $$
-\mathbf{x}_n = \mathbf{x}_{n-1} + \frac{1}{2} \Delta{t} \left(\mathbf{f}(\mathbf{x}_n) + \mathbf{f}(\mathbf{x}_{n-1})\right),\ \ \ n = 1, \ldots, N,
+f(t,x,y,z,\gamma) = \varphi(t,x,y,z) - \mu(t,x,y,z)'z - \frac{1}{2}\text{Tr}[\sigma(t,x,y)\sigma(t,x,y)'\gamma].
 $$
 
-corresponds to the case where $$M = 1$$, $$\alpha_0 = -1$$, $$\alpha_1 = 1$$, and $$\beta_0 = \beta_1 = 0.5$$. We proceed by placing a neural network prior on the function $$\mathbf{f}$$. The parameters of this neural network can be learned by minimizing the mean squared error loss function
+Here, $$Du$$ and $$D^2u$$ denote the gradient vector and the Hessian matrix of $$u$$, respectively. In particular, it follows directly from [Ito's formula](https://en.wikipedia.org/wiki/Itô%27s_lemma) that solutions of forward-backward stochastic differential equations and quasi-linear partial differential equations are related according to
 
 $$
-MSE := \frac{1}{N-M+1}\sum_{n=M}^{N} |\mathbf{y}_n|^2,
+Y_t = u(t, X_t), ~ \text{and} ~ Z_t = D u(t, X_t).
 $$
 
-where
+Inspired by recent developments in [physics-informed deep learning](https://maziarraissi.github.io/PINNs/) and [deep hidden physics models](https://maziarraissi.github.io/DeepHPMs/), we proceed by approximating the unknown solution $$u(t,x)$$ by a deep neural network. We obtain the required gradient vector $$Du(t,x)$$ by applying the chain rule for differentiating compositions of functions using automatic differentiation. In particular, to compute the derivatives we rely on [Tensorflow](https://www.tensorflow.org) which is a popular and relatively well documented open source software library for automatic differentiation and deep learning computations.
+
+Parameters of the neural network representing $$u(t,x)$$ can be learned by minimizing the following loss function obtained from discretizing the forward-backward stochastic differential equation using the standard [Euler-Maruyama scheme](https://en.wikipedia.org/wiki/Euler–Maruyama_method). To be more specific, let us employ the Euler-Maruyama scheme and obtain
 
 $$
-\mathbf{y}_n := \sum_{m=0}^M \left[\alpha_m \mathbf{x}_{n-m} + \Delta t \beta_m \mathbf{f}(\mathbf{x}_{n-m})\right], \ \ \ n = M, \ldots, N,
+\begin{array}{l}
+X^{n+1} \approx X^n + \mu(t^n,X^n,Y^n,Z^n)\Delta t^n + \sigma(t^n,X^n,Y^n)\Delta W^n,\\
+Y^{n+1} \approx Y^n + \varphi(t^n,X^n,Y^n,Z^n)\Delta t^n + (Z^n)'\sigma(t^n,X^n,Y^n)\Delta W^n,
+\end{array}
 $$
 
-is obtained from the multistep scheme.
+for $$n = 0, 1, \ldots, N-1$$, where $$\Delta t^n := t^{n+1} - t^n = T/N$$ and $$\Delta W^n \sim \mathcal{N}(0, \Delta t^n)$$ is a random variable with mean $$0$$ and standard deviation $$\sqrt{\Delta t^n}$$. The loss function is then given by
+
+$$
+\sum_{m=1}^M \sum_{n=0}^{N-1} |Y^{n+1}_m - Y^n_m - \Phi^n_m \Delta t^n - (Z^n_m)' \Sigma^n_m \Delta W_m^n|^2 + \sum_{m=1}^M |Y^N_m - g(X^N_m)|^2,
+$$
+
+which corresponds to $$M$$ different realizations of the underlying Brownian motion. Here, $$\Phi^n_m := \varphi(t^n,X^n_m,Y^n_m,Z^n_m)$$ and $$\Sigma^n_m := \sigma(t^n,X^n_m,Y^n_m)$$. The subscript $$m$$ corresponds to the $$m$$-th realization of the underlying Brownian motion while the superscript $$n$$ corresponds to time $$t^n$$. It is worth recalling that $$Y_m^n = u(t^n, X_m^n)$$ and $$Z_m^n = D u(t^n, X_m^n)$$, and consequently the loss is a function of the parameters of the neural network $$u(t,x)$$. Furthermore, we have
+
+$$
+X^{n+1}_m = X^n_m + \mu(t^n,X^n_m,Y^n_m,Z^n_m)\Delta t^n + \sigma(t^n_m,X^n_m,Y^n_m)\Delta W^n_m,
+$$
+
+and $$X^0_m = \xi$$ for every $$m$$.
 
 * * * * * *
 #### Results
