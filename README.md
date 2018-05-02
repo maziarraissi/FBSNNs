@@ -1,3 +1,16 @@
-# Forward-Backward Stochastic Neural Networks
+# [Forward-Backward Stochastic Neural Networks](https://maziarraissi.github.io/FBSNNs/)
 
-Thanks for your interest. This work is currently under review for publication and the codes will be publicly available on-line as soon as the review process is over. In the meantime, the manuscript is written in such a way that a reimplementation is easily feasible. Hopefully we will hear back from the journal soon. Apologies for the wait ...
+Classical numerical methods for solving partial differential equations suffer from the curse of dimensionality mainly due to their reliance on meticulously generated spatio-temporal grids. Inspired by modern deep learning based techniques for solving forward and inverse problems associated with partial differential equations, we circumvent the tyranny of numerical discretization by devising an algorithm that is scalable to high-dimensions. In particular, we approximate the unknown solution by a deep neural network which essentially enables us to benefit from the merits of automatic differentiation. To train the aforementioned neural network we leverage the well-known connection between high-dimensional partial differential equations and forward-backward stochastic differential equations. In fact, independent realizations of a standard Brownian motion will act as training data. We test the effectiveness of our approach for a couple of benchmark problems spanning a number of scientific domains including Black-Scholes-Barenblatt and Hamilton-Jacobi-Bellman equations, both in 100-dimensions. 
+
+For more information, please refer to the following: (https://maziarraissi.github.io/FBSNNs/)
+
+  - Raissi, Maziar. "[Forward-Backward Stochastic Neural Networks: Deep Learning of High-dimensional Partial Differential Equations](https://arxiv.org/abs/1804.07010)." arXiv preprint arXiv:1804.07010 (2018).
+
+## Citation
+
+    @article{raissi2018forward,
+      title={Forward-Backward Stochastic Neural Networks: Deep Learning of High-dimensional Partial Differential Equations},
+      author={Raissi, Maziar},
+      journal={arXiv preprint arXiv:1804.07010},
+      year={2018}
+    }
