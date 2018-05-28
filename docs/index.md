@@ -5,7 +5,7 @@ layout: default
 [Maziar Raissi](http://www.dam.brown.edu/people/mraissi/)
 
 ### Video
-[Maziar Raissi](https://youtu.be/-Pu_ZTJsMyA)
+[https://youtu.be/-Pu_ZTJsMyA](https://youtu.be/-Pu_ZTJsMyA)
 
 ### Abstract
 
