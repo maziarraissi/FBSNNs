@@ -4,6 +4,9 @@ layout: default
 ### Author
 [Maziar Raissi](http://www.dam.brown.edu/people/mraissi/)
 
+### Video
+[Maziar Raissi](https://youtu.be/-Pu_ZTJsMyA)
+
 ### Abstract
 
 Classical numerical methods for solving [partial differential equations](https://en.wikipedia.org/wiki/Partial_differential_equation) suffer from the [curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality) mainly due to their reliance on meticulously generated spatio-temporal grids. Inspired by [modern deep learning based techniques](https://maziarraissi.github.io/DeepHPMs/) for solving forward and inverse problems associated with partial differential equations, we circumvent the tyranny of numerical discretization by devising an algorithm that is scalable to high-dimensions. In particular, we approximate the unknown solution by a [deep neural network](https://en.wikipedia.org/wiki/Deep_learning) which essentially enables us to benefit from the merits of [automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation). To train the aforementioned neural network we leverage the [well-known connection](https://onlinelibrary.wiley.com/doi/abs/10.1002/cpa.20168) between high-dimensional partial differential equations and [forward-backward stochastic differential equations](https://www.mathematik.hu-berlin.de/~perkowsk/files/bsde.pdf). In fact, independent realizations of a standard [Brownian motion](https://en.wikipedia.org/wiki/Brownian_motion) will act as training data. We test the effectiveness of our approach for a couple of benchmark problems spanning a number of scientific domains including [Black-Scholes-Barenblatt](https://en.wikipedia.org/wiki/Black–Scholes_model) and [Hamilton-Jacobi-Bellman](https://en.wikipedia.org/wiki/Hamilton–Jacobi–Bellman_equation) equations, both in 100-dimensions.
