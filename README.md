@@ -7,6 +7,8 @@ For more information, please refer to the following: (https://maziarraissi.githu
   - Raissi, Maziar. "[Forward-Backward Stochastic Neural Networks: Deep Learning of High-dimensional Partial Differential Equations](https://arxiv.org/abs/1804.07010)." arXiv preprint arXiv:1804.07010 (2018).
   
   - Video: [Forward-Backward Stochastic Neural Networks](https://youtu.be/-Pu_ZTJsMyA)
+  
+  - Slides: [Forward-Backward Stochastic Neural Networks](https://github.com/maziarraissi/FBSNNs/blob/master/docs/FBSNNs.pdf)
 
 ## Citation
 
