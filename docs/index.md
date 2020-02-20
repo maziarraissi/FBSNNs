@@ -2,7 +2,7 @@
 layout: default
 ---
 ### Author
-[Maziar Raissi](http://www.dam.brown.edu/people/mraissi/)
+[Maziar Raissi](https://maziarraissi.github.io/)
 
 ### Video
 [https://youtu.be/-Pu_ZTJsMyA](https://youtu.be/-Pu_ZTJsMyA)
@@ -100,12 +100,12 @@ $$
 
 which can be used to test the accuracy of the proposed algorithm. We approximate the unknown solution $$u(t,x)$$ by a 5-layer deep neural network with $$256$$ neurons per hidden layer. Furthermore, we partition the time domain $$[0,T]$$ into $$N=50$$ equally spaced intervals. Upon minimizing the loss function, using the [Adam optimizer](https://arxiv.org/abs/1412.6980) with mini-batches of size $$100$$ (i.e., $$100$$ realizations of the underlying Brownian motion), we obtain the results reported in the following figure. In this figure, we are evaluating the learned solution $$Y_t = u(t,X_t)$$ at representative realizations (not seen during training) of the underlying high-dimensional process $$X_t$$. Unlike the state of the art [algorithms](https://arxiv.org/abs/1709.05963), which can only approximate $$Y_0 = u(0,X_0)$$ at time $$0$$ and at the initial spatial point $$X_0=\xi$$, our algorithm is capable of approximating the entire solution function $$u(t,x)$$ in a single round of training as demonstrated in the following figure.
 
-![](http://www.dam.brown.edu/people/mraissi/assets/img/BSB_Apr18_50.png)
+![](https://maziarraissi.github.io/assets/img/BSB_Apr18_50.png)
 > _Black-Scholes-Barenblatt Equation in 100D:_ Evaluations of the learned solution at representative realizations of the underlying high-dimensional process. It should be highlighted that the state of the art algorithms can only approximate the solution at time 0 and at the initial spatial point.
 
 To further scrutinize the performance of our algorithm, in the following figure we report the mean and mean plus two standard deviations of the relative errors between model predictions and the exact solution computed based on $$100$$ independent realizations of the underlying Brownian motion. It is worth noting that in the previous figure we were plotting $$5$$ representative examples of the $$100$$ realizations used to generate the following figure. The results reported in these two figures are obtained after $$2 \times 10^4$$, $$3 \times 10^4$$, $$3 \times 10^4$$, and $$2 \times 10^4$$ consecutive iterations of the Adam optimizer with learning rates of $$10^{-3}$$, $$10^{-4}$$, $$10^{-5}$$, and $$10^{-6}$$, respectively. The total number of iterations is therefore given by $$10^5$$. Every $$10$$ iterations of the optimizer takes about $$0.88$$ seconds on a single NVIDIA Titan X GPU card. In each iteration of the Adam optimizer we are using $$100$$ different realizations of the underlying Brownian motion. Consequently, the total number of Brownian motion trajectories observed by the algorithm is given by $$10^7$$. It is worth highlighting that the algorithm converges to the exact value $$Y_0 = u(0,X_0)$$ in the first few hundred iterations of the Adam optimizer. For instance after only $$500$$ steps of training, the algorithms achieves an accuracy of around $$2.3 \times 10^{-3}$$ in terms of relative error. This is comparable to the results reported [here](https://arxiv.org/abs/1709.05963), both in terms of accuracy and the speed of the algorithm. However, to obtain more accurate estimates for $$Y_t = u(t,X_t)$$ at later times $$t>0$$ we need to train the algorithm using more iterations of the Adam optimizer.
 
-![](http://www.dam.brown.edu/people/mraissi/assets/img/BSB_Apr18_50_errors.png)
+![](https://maziarraissi.github.io/assets/img/BSB_Apr18_50_errors.png)
 > _Black-Scholes-Barenblatt Equation in 100D:_ Mean and mean plus two standard deviations of the relative errors between model predictions and the exact solution computed based on 100 realizations of the underlying Brownian motion.
 
 **Hamilton-Jacobi-Bellman Equation in 100D**
@@ -135,12 +135,12 @@ $$
 
 which can be used to test the accuracy of the proposed algorithm. In fact, due to the presence of the expectation operator $$\mathbb{E}$$ in the above equation, we can only approximately compute the exact solution. To be precise, we use $$10^5$$ Monte-Carlo samples to approximate the exact solution and use the result as ground truth. We represent the unknown solution $$u(t,x)$$ by a $$5$$-layer deep neural network with $$256$$ neurons per hidden layer. Furthermore, we partition the time domain $$[0,T]$$ into $$N=50$$ equally spaced intervals. Upon minimizing the loss function, using the Adam optimizer with mini-batches of size $$100$$ (i.e., $$100$$ realizations of the underlying Brownian motion), we obtain the results reported in the following figure. In this figure, we are evaluating the learned solution $$Y_t = u(t,X_t)$$ at a representative realization (not seen during training) of the underlying high-dimensional process $$X_t$$. It is worth noting that computing the exact solution to this problem is prohibitively costly due to the need for the aforementioned Monte-Carlo sampling strategy. That is why we are depicting only a single realization of the solution trajectories in the following figure. Unlike the state of the art [algorithms](https://arxiv.org/abs/1709.05963), which can only approximate $$Y_0 = u(0,X_0)$$ at time $$0$$ and at the initial spatial point $$X_0=\xi$$, our algorithm is capable of approximating the entire solution function $$u(t,x)$$ in a single round of training as demonstrated in the following figure.
 
-![](http://www.dam.brown.edu/people/mraissi/assets/img/HJB_Apr18_50.png)
+![](https://maziarraissi.github.io/assets/img/HJB_Apr18_50.png)
 > _Hamilton-Jacobi-Bellman Equation in 100D:_ Evaluation of the learned solution at a representative realization of the underlying high-dimensional process. It should be highlighted that the state of the art algorithms can only approximate the solution at time 0 and at the initial spatial point.
 
 To further investigate the performance of our algorithm, in the following figure we report the relative error between model prediction and the exact solution computed for the same realization of the underlying Brownian motion as the one used in the previous figure. The results reported in these two figures are obtained after $$2 \times 10^4$$, $$3 \times 10^4$$, $$3 \times 10^4$$, and $$2 \times 10^4$$ consecutive iterations of the Adam optimizer with learning rates of $$10^{-3}$$, $$10^{-4}$$, $$10^{-5}$$, and $$10^{-6}$$, respectively. The total number of iterations is therefore given by $$10^5$$. Every $$10$$ iterations of the optimizer takes about $$0.79$$ seconds on a single NVIDIA Titan X GPU card. In each iteration of the Adam optimizer we are using $$100$$ different realizations of the underlying Brownian motion. Consequently, the total number of Brownian motion trajectories observed by the algorithm is given by $$10^7$$. It is worth highlighting that the algorithm converges to the exact value $$Y_0 = u(0,X_0)$$ in the first few hundred iterations of the Adam optimizer. For instance after only $$100$$ steps of training, the algorithms achieves an accuracy of around $$7.3 \times 10^{-3}$$ in terms of relative error. This is comparable to the results reported [here](https://arxiv.org/abs/1709.05963), both in terms of accuracy and the speed of the algorithm. However, to obtain more accurate estimates for $$Y_t = u(t,X_t)$$ at later times $$t>0$$ we need to train the algorithm using more iterations of the Adam optimizer.
 
-![](http://www.dam.brown.edu/people/mraissi/assets/img/HJB_Apr18_50_errors.png)
+![](https://maziarraissi.github.io/assets/img/HJB_Apr18_50_errors.png)
 > _Hamilton-Jacobi-Bellman Equation in 100D:_ The relative error between model prediction and the exact solution computed based on a single realization of the underlying Brownian motion.
 
 * * * * *
@@ -166,4 +166,3 @@ This work received support by the DARPA EQUiPS grant N66001-15-2-4055 and the AF
 	  journal={arXiv preprint arXiv:1804.07010},
 	  year={2018}
 	}
-
